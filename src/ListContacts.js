@@ -1,14 +1,13 @@
-import React, { Component } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import escapeRegExp from 'escape-string-regexp'
 import sortBy from 'sort-by'
 
 
-class ListContacts extends Component {
+class ListContacts extends React.Component {
      static propTypes = {
           contacts: PropTypes.array.isRequired,
           onDeleteContact: PropTypes.func.isRequired
-
      }
 
      state = {
@@ -21,12 +20,21 @@ class ListContacts extends Component {
           })
      }
 
+     clearQuery = () => {
+          this.setState({
+               query: '',
+          })
+     }
+
      render() {
+          const {contacts, onDeleteContact} = this.props;
+          const {query} = this.state;
+
           let showingContacts;
 
-          if (this.state.query) {
-               const match = new RegExp(escapeRegExp(this.state.query), 'i');
-               showingContacts = this.props.contacts.filter((contact) => match.test(contact.name))
+          if (query) {
+               const match = new RegExp(escapeRegExp(query), 'i');
+               showingContacts = contacts.filter((contact) => match.test(contact.name))
           } else {
                showingContacts = this.props.contacts;
           }
@@ -36,13 +44,24 @@ class ListContacts extends Component {
 
           return (
                <div className="list-contacts">
-                    <input
-                         className="search-contacts"
-                         type="text"
-                         placeholder="Search contacts"
-                         value={this.state.query}
-                         onChange={(event) => this.updateQuery(event.target.value)}
-                    />
+                    <div className="list-contacts-top">
+                         <input
+                              className="search-contacts"
+                              type="text"
+                              placeholder="Search contacts"
+                              value={this.state.query}
+                              onChange={(event) => this.updateQuery(event.target.value)}
+                         />
+                    </div>
+
+
+                    {showingContacts.length !== contacts.length && (
+                         <div className="showing-contacts">
+                              <span>Now showing {showingContacts.length} of {contacts.length} total</span>
+                              <button onClick={this.clearQuery}>Show all</button>
+                         </div>
+                         )}
+
                     <ol className="contact-list">
                     {showingContacts.map((contact) => {
                          return (
@@ -57,7 +76,7 @@ class ListContacts extends Component {
                                    </div>
                                    <button
                                         className="contact-remove"
-                                        onClick={() => this.props.onDeleteContact(contact)}>
+                                        onClick={() => onDeleteContact(contact)}>
                                         Remove
                                    </button>
                               </li>
